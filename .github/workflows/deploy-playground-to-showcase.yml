@@ -1,0 +1,43 @@
+name: Deploy Playground to Showcase
+
+on:
+  workflow_run:
+    workflows:
+      - Build Playground Runtime Artifact
+    types:
+      - completed
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  deploy:
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Download built runtime
+        uses: actions/download-artifact@v4
+        with:
+          name: golden-playground-runtime
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract runtime
+        run: |
+          mkdir runtime
+          unzip playground-runtime.zip -d runtime
+
+      - name: Deploy using FTPS
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          port: ${{ secrets.FTP_PORT }}
+          local-dir: runtime/
+          server-dir: ./
+          dangerous-clean-slate: false
