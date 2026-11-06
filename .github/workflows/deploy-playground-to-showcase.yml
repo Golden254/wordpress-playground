@@ -1,3 +1,4 @@
+
 name: Deploy Playground to Showcase
 
 on:
@@ -22,13 +23,14 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: golden-playground-runtime
-          run-id: $&#123;&#123; github.event.workflow_run.id &#125;&#125;
-          github-token: $&#123;&#123; secrets.GITHUB_TOKEN &#125;&#125;
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check archive
         run: |
           ls -lh playground-runtime.zip
           unzip -tq playground-runtime.zip
+          du -h playground-runtime.zip
 
       - name: Prepare single-file upload
         run: |
@@ -38,12 +40,11 @@ jobs:
       - name: Upload archive using FTPS
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          server: $&#123;&#123; secrets.FTP_SERVER &#125;&#125;
-          username: $&#123;&#123; secrets.FTP_USERNAME &#125;&#125;
-          password: $&#123;&#123; secrets.FTP_PASSWORD &#125;&#125;
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftps
-          port: $&#123;&#123; secrets.FTP_PORT &#125;&#125;
+          port: ${{ secrets.FTP_PORT }}
           local-dir: upload/
           server-dir: ./
           dangerous-clean-slate: false
-  
